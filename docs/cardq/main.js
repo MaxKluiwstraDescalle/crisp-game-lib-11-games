@@ -63,7 +63,7 @@ const cardRowCount = 5;
 const cardColumnCount = 5;
 
 function update() {
-  if (!ticks) {
+  if (!ticks) { // "ready" function that occurs once when game runs
     placedCardNumbers = [2, 12];
     placedCards = times(2, (i) => {
       const pos = vec(calcPlacedCardX(i), 0);
@@ -93,7 +93,7 @@ function update() {
     multiplier = 1;
   }
   shuffleTicks++;
-  if (shuffleTicks > 60) {
+  if (shuffleTicks > 60) { // after 60 update loops this happens
     let isPlacable = false;
     let isPlayerPlacable = false;
     for (let i = 0; i < cardColumnCount; i++) {
@@ -137,23 +137,23 @@ function update() {
     }
     shuffleTicks = 0;
   }
-  const pci = floor((input.pos.x - 50) / cardIntervalX + cardColumnCount / 2);
+  const pci = floor((input.pos.x - 50) / cardIntervalX + cardColumnCount / 2); // finds player card index depending on location of click on screen
   if (input.isJustPressed) {
     if (pci >= 0 && pci < cardColumnCount) {
-      const pi = placeCard(pci, playerPrevMoveIndex, playerCards);
-      if (pi < 0) {
-        play("hit");
-        penaltyIndex = pci;
-        penaltyTicks = 60;
-        targetCenterY += 5;
-        multiplier = 1;
-        shuffleTicks = shuffleCount = 0;
-      } else {
-        play("coin");
-        playerPrevMoveIndex = pi;
-        targetCenterY -= 5;
-        addScore(multiplier, pi === 0 ? 8 : 92, centerY);
-        multiplier++;
+      const pi = placeCard(pci, playerPrevMoveIndex, playerCards); // player prevmove starts at 0, pci is index of card played in playerCards
+      if (pi < 0) { // pi is -1 if it is incorrect
+        play("hit"); // X // play is a function that plays sound, hit is a negative sound
+        penaltyIndex = pci; 
+        penaltyTicks = 60; // X //
+        targetCenterY += 5; // pushes player back by changing the center
+        multiplier = 1; 
+        shuffleTicks = shuffleCount = 0; 
+      } else { // played correctly
+        play("coin"); // X //
+        playerPrevMoveIndex = pi; // updates player prev move (for some reason)
+        targetCenterY -= 5; // changes the center (i think)
+        addScore(multiplier, pi === 0 ? 8 : 92, centerY); // X // increases player score (built in to crisp)
+        multiplier++; // X // increases the multiplier, which increases the score
       }
     }
   }
@@ -209,7 +209,7 @@ function update() {
   if (placedCards.length > 19) {
     placedCards.shift();
   }
-  if (penaltyTicks > 0) {
+  if (penaltyTicks > 0) { // for animation purposes
     penaltyTicks--;
     color("red");
     text("X", calcCardX(penaltyIndex), centerY + 6);
@@ -220,11 +220,11 @@ function update() {
   }
   if (centerY > 94) {
     play("explosion");
-    end();
+    end(); // causes player to lose the game when centerY > 94
   }
 
   function placeCard(idx, ppi, cards) {
-    const [pi, cn, ci] = checkPlacedIndex(idx, ppi, cards);
+    const [pi, cn, ci] = checkPlacedIndex(idx, ppi, cards); // card played index, player prevmove index and cards array gets passed to checkPlacedIndex
     if (pi === -1) {
       return -1;
     }
