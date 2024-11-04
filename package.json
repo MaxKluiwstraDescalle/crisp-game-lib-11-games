@@ -9,5 +9,8 @@
   "license": "MIT",
   "devDependencies": {
     "light-server": "^2.9.1"
+  },
+  "dependencies": {
+    "crisp-game-lib": "^1.2.0"
   }
 }
