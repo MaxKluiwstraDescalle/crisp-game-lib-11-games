@@ -115,27 +115,27 @@ function update() {
         isPlacable = true;
         break;
       }
-    }
-    if (!isPlayerPlacable) {
+    } // defines whether cards are playable and if the player has them in their hand
+    if (!isPlayerPlacable) { // if the player cannot place a card, the enemy moves quicker
       enemyNextMoveTicks *= 0.3;
     }
     shuffleCount++;
-    if (!isPlacable || shuffleCount > 2) {
-      play("powerUp");
+    if (!isPlacable || shuffleCount > 2) { // shuffles the deck if the player cannot play or if nothing has happened in 120 ticks.
+      play("powerUp"); // X //
       placedCards.forEach((c) => {
         c.tPos.x = c.pos.x < 50 ? -50 : 150;
-      });
-      placedCardNumbers = times(2, () => rndi(1, 14));
+      }); // removes cards
+      placedCardNumbers = times(2, () => rndi(1, 14)); //
       placedCardNumbers.forEach((n, i) => {
         placedCards.push({
           num: n,
           pos: vec(i === 0 ? -5 : 105, 0),
           tPos: vec(calcPlacedCardX(i), 0),
         });
-      });
-      shuffleCount = 0;
+      }); // adds new cards
+      shuffleCount = 0; // resets the shufflecount 
     }
-    shuffleTicks = 0;
+    shuffleTicks = 0; // resets shuffleticks
   }
   const pci = floor((input.pos.x - 50) / cardIntervalX + cardColumnCount / 2); // finds player card index depending on location of click on screen
   if (input.isJustPressed) {
@@ -159,7 +159,7 @@ function update() {
   }
   enemyNextMoveTicks--;
   if (enemyNextMoveTicks < 0) {
-    enemyNextMoveTicks = rnd(50, 70) / sqrt(difficulty);
+    enemyNextMoveTicks = rnd(50, 70) / sqrt(difficulty); // defines when the enemy will move next
     if (enemyNextMoveIndex != null) {
       const [pi, cn, ci] = checkPlacedIndex(
         enemyNextMoveIndex,
