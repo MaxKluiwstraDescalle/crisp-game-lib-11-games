@@ -58,7 +58,7 @@ let shuffleCount;
 let penaltyIndex;
 let penaltyTicks;
 let multiplier;
-let scoreBoxY = 50;
+let scoreBoxY;
 const cardIntervalX = 15;
 const cardRowCount = 5;
 const cardColumnCount = 5;
@@ -88,6 +88,7 @@ function update() {
       return { num, pos, tPos, gPos };
     });
     centerY = targetCenterY = 50;
+    scoreBoxY = 50;
     playerPrevMoveIndex = enemyPrevMoveIndex = 0;
     enemyNextMoveIndex = undefined;
     enemyNextMoveTicks = 120;
@@ -220,7 +221,7 @@ function update() {
   if (targetCenterY < 16) {
     targetCenterY += (16 - targetCenterY) * 0.1;
   }
-  if (centerY > 94) {
+  if (scoreBoxY > 89) {
     play("explosion");
     end(); // causes player to lose the game when centerY > 94
   }
