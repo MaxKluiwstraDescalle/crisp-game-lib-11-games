@@ -304,6 +304,12 @@ function update() {
     if(y == undefined){
       y = 50;
     }
+    if(y > 90){
+      y = 90;
+    }
+    if(y < 10){
+      y = 10;
+    }
     box(10,y,7,7);
   }
 
