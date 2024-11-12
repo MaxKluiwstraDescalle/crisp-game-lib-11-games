@@ -84,7 +84,7 @@ function update() {
       const tPos = vec(pos);
       return { num, pos, tPos, gPos };
     });
-    centerY = targetCenterY = 40;
+    centerY = targetCenterY = 50;
     playerPrevMoveIndex = enemyPrevMoveIndex = 0;
     enemyNextMoveIndex = undefined;
     enemyNextMoveTicks = 120;
@@ -144,14 +144,12 @@ function update() {
       if (pi < 0) { // pi is -1 if it is incorrect
         play("hit"); // X // play is a function that plays sound, hit is a negative sound
         penaltyIndex = pci; 
-        penaltyTicks = 60; // X //
-        targetCenterY += 5; // pushes player back by changing the center
+        penaltyTicks = 60; // X // // pushes player back by changing the center
         multiplier = 1; 
         shuffleTicks = shuffleCount = 0; 
       } else { // played correctly
         play("coin"); // X //
-        playerPrevMoveIndex = pi; // updates player prev move (for some reason)
-        targetCenterY -= 5; // changes the center (i think)
+        playerPrevMoveIndex = pi; // updates player prev move (for some reason)// changes the center (i think)
         addScore(multiplier, pi === 0 ? 8 : 92, centerY); // X // increases player score (built in to crisp)
         multiplier++; // X // increases the multiplier, which increases the score
       }
@@ -172,7 +170,6 @@ function update() {
         play("select");
         placeCard(enemyNextMoveIndex, enemyPrevMoveIndex, enemyCards);
         enemyPrevMoveIndex = pi;
-        targetCenterY += 5;
         multiplier = 1;
       }
     }
