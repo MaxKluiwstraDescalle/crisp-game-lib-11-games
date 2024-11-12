@@ -58,11 +58,14 @@ let shuffleCount;
 let penaltyIndex;
 let penaltyTicks;
 let multiplier;
+let scoreBoxY = 50;
 const cardIntervalX = 15;
 const cardRowCount = 5;
 const cardColumnCount = 5;
 
 function update() {
+  drawBar();
+  drawScoreBox(scoreBoxY);
   if (!ticks) { // "ready" function that occurs once when game runs
     placedCardNumbers = [2, 12];
     placedCards = times(2, (i) => {
@@ -152,6 +155,7 @@ function update() {
         playerPrevMoveIndex = pi; // updates player prev move (for some reason)// changes the center (i think)
         addScore(multiplier, pi === 0 ? 8 : 92, centerY); // X // increases player score (built in to crisp)
         multiplier++; // X // increases the multiplier, which increases the score
+        scoreBoxY -= 2; // Update score box position
       }
     }
   }
@@ -171,6 +175,7 @@ function update() {
         placeCard(enemyNextMoveIndex, enemyPrevMoveIndex, enemyCards);
         enemyPrevMoveIndex = pi;
         multiplier = 1;
+        scoreBoxY += 2; // Score box moves down when enemy scores
       }
     }
     enemyNextMoveIndex = undefined;
@@ -288,6 +293,18 @@ function update() {
     } else {
       text(numChars[n], x, y);
     }
+  }
+
+  function drawBar(){
+    color("black");
+    box(10,50,5,75);
+  }
+  function drawScoreBox(y){
+    color("light_black");
+    if(y == undefined){
+      y = 50;
+    }
+    box(10,y,7,7);
   }
 
   function calcPlayerCardPos(p) {
