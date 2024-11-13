@@ -1,8 +1,11 @@
 title = "CARD Q";
 
 description = `
-[Tap]
- Pull out a card
+      [Tap]
+  Pull out a card
+
+  [A,S,D,F,Space]
+ Play from column
 `;
 
 characters = [
@@ -58,9 +61,18 @@ let shuffleCount;
 let penaltyIndex;
 let penaltyTicks;
 let multiplier;
+let keyPressed = false;
+let hitKey;
 const cardIntervalX = 15;
 const cardRowCount = 5;
 const cardColumnCount = 5;
+
+document.addEventListener('keydown', (event) => {
+  console.log(`Key pressed: ${event.key}`);
+  hitKey = event.key;
+  keyPressed = true;
+});
+
 
 function update() {
   if (!ticks) { // "ready" function that occurs once when game runs
@@ -137,8 +149,36 @@ function update() {
     }
     shuffleTicks = 0; // resets shuffleticks
   }
-  const pci = floor((input.pos.x - 50) / cardIntervalX + cardColumnCount / 2); // finds player card index depending on location of click on screen
-  if (input.isJustPressed) {
+  let pci = floor((input.pos.x - 50) / cardIntervalX + cardColumnCount / 2); // finds player card index depending on location of click on screen
+  if(keyPressed) {
+    if(hitKey == "a"){
+      pci = 0;
+      playCard(0);
+      console.log(pci)
+    };
+    if(hitKey == "s"){
+      pci = 1;
+      playCard(1);
+      console.log(pci)
+    };
+    if(hitKey == "d"){
+      pci = 2;
+      playCard(2);
+      console.log(pci)
+    };
+    if(hitKey == "f"){
+      pci = 3;
+      playCard(3);
+      console.log(pci)
+    };
+    if(hitKey == " "){
+      pci = 4;
+      playCard(4);
+      console.log(pci)
+    };
+    keyPressed = false;
+  }
+  else if (input.isJustPressed) {
     if (pci >= 0 && pci < cardColumnCount) {
       const pi = placeCard(pci, playerPrevMoveIndex, playerCards); // player prevmove starts at 0, pci is index of card played in playerCards
       if (pi < 0) { // pi is -1 if it is incorrect
@@ -251,6 +291,26 @@ function update() {
     cards.push({ num: rndi(1, 14), pos, tPos, gPos });
     shuffleTicks = shuffleCount = 0;
     return pi;
+  }
+
+  function playCard(column) {
+    if (column >= 0 && column < cardColumnCount) {
+      const pi = placeCard(column, playerPrevMoveIndex, playerCards); // player prevmove starts at 0, pci is index of card played in playerCards
+      if (pi < 0) { // pi is -1 if it is incorrect
+        play("hit"); // X // play is a function that plays sound, hit is a negative sound
+        penaltyIndex = column; 
+        penaltyTicks = 60; // X //
+        targetCenterY += 5; // pushes player back by changing the center
+        multiplier = 1; 
+        shuffleTicks = shuffleCount = 0; 
+      } else { // played correctly
+        play("coin"); // X //
+        playerPrevMoveIndex = pi; // updates player prev move (for some reason)
+        targetCenterY -= 5; // changes the center (i think)
+        addScore(multiplier, pi === 0 ? 8 : 92, centerY); // X // increases player score (built in to crisp)
+        multiplier++; // X // increases the multiplier, which increases the score
+      }
+    }
   }
 
   function checkPlacedIndex(idx, ppi, cards) {
