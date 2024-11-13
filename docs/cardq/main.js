@@ -195,8 +195,7 @@ function update() {
     if(hitKey == " "){
       pci = 4;
       playCard(4);
-
-    };
+    }
     keyPressed = false;
   }
   else if (input.isJustPressed) {
@@ -218,6 +217,10 @@ function update() {
         playerCombo++; // Increase player combo on correct move
         enemyCombo = 0; // Reset enemy combo when player plays
         scoreBoxY -= playerCombo; // Update score box position based on combo
+        if (scoreBoxY <= 10) { // Check if score box reaches the top
+          play("powerUp"); // Play a sound to indicate winning
+          end("You Win!"); // End the game with a win message
+        }
       }
     }
   }
