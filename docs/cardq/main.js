@@ -60,11 +60,19 @@ let shuffleCount;
 let penaltyIndex;
 let penaltyTicks;
 let multiplier;
+let scoreBoxY;
 const cardIntervalX = 15;
 const cardRowCount = 5;
 const cardColumnCount = 5;
 
+let playerCombo = 0;
+let enemyCombo = 0;
+let playerScore = 0;
+let enemyScore = 0;
+
 function update() {
+  drawBar();
+  drawScoreBox(scoreBoxY);
   if (!ticks) { // "ready" function that occurs once when game runs
     placedCardNumbers = [2, 12];
     placedCards = times(2, (i) => {
@@ -90,14 +98,20 @@ function update() {
       const enemyplacing = true;
       return { num, pos, tPos, gPos, enemyplacing };
     });
+
     enemyPlacingCards = [];
-    centerY = targetCenterY = 40;
+
+    centerY = targetCenterY = 50;
+    scoreBoxY = 50;
+
     playerPrevMoveIndex = enemyPrevMoveIndex = 0;
     enemyNextMoveIndex = undefined;
     enemyNextMoveTicks = 120;
     shuffleTicks = shuffleCount = 0;
     penaltyTicks = -1;
     multiplier = 1;
+    playerCombo = 0; // Initialize player combo
+    enemyCombo = 0; // Initialize enemy combo
   }
   shuffleTicks++;
   if (shuffleTicks > 60) { // after 60 update loops this happens
@@ -153,16 +167,19 @@ function update() {
       if (pi < 0) { // pi is -1 if it is incorrect
         play("hit"); // X // play is a function that plays sound, hit is a negative sound
         penaltyIndex = pci; 
-        penaltyTicks = 60; // X //
-        targetCenterY += 5; // pushes player back by changing the center
+        penaltyTicks = 60; // X // // pushes player back by changing the center
         multiplier = 1; 
         shuffleTicks = shuffleCount = 0; 
+        playerCombo = 0; // Reset player combo on incorrect move
+        scoreBoxY += 5; // Move score box down to represent a hit
       } else { // played correctly
         play("coin"); // X //
-        playerPrevMoveIndex = pi; // updates player prev move (for some reason)
-        targetCenterY -= 5; // changes the center (i think)
+        playerPrevMoveIndex = pi; // updates player prev move (for some reason)// changes the center (i think)
         addScore(multiplier, pi === 0 ? 8 : 92, centerY); // X // increases player score (built in to crisp)
         multiplier++; // X // increases the multiplier, which increases the score
+        playerCombo++; // Increase player combo on correct move
+        enemyCombo = 0; // Reset enemy combo when player plays
+        scoreBoxY -= playerCombo; // Update score box position based on combo
       }
     }
   }
@@ -175,14 +192,17 @@ function update() {
         enemyPrevMoveIndex,
         enemyCards
       );
-      if (pi < 0) { // if the enemy cannot make a move
-        enemyNextMoveTicks *= 3; //multiply the amount of time the enemy waits before trying again
-      } else { // if the enemy can make a move
-        play("select"); // X //
-        placeCard(enemyNextMoveIndex, enemyPrevMoveIndex, enemyCards); // places a card (code for "knocking off" cards would have to be in PlaceCard)
-        enemyPrevMoveIndex = pi; // updates enemy's last move (for some reason)
-        targetCenterY += 5; 
-        multiplier = 1; // resets player multiplier
+      if (pi < 0) {
+        enemyNextMoveTicks *= 3;
+        enemyCombo = 0; // Reset enemy combo on incorrect move
+      } else {
+        play("select");
+        placeCard(enemyNextMoveIndex, enemyPrevMoveIndex, enemyCards);
+        enemyPrevMoveIndex = pi;
+        multiplier = 1;
+        enemyCombo++; // Increase enemy combo on correct move
+        playerCombo = 0; // Reset player combo when enemy plays
+        scoreBoxY += enemyCombo; // Score box moves down based on enemy combo
       }
     }
     enemyNextMoveIndex = undefined; // resets the next move
@@ -247,7 +267,7 @@ function update() {
   if (targetCenterY < 16) {
     targetCenterY += (16 - targetCenterY) * 0.1;
   }
-  if (centerY > 94) {
+  if (scoreBoxY > 89) {
     play("explosion");
     end(); // causes player to lose the game when centerY > 94
   }
@@ -345,6 +365,24 @@ function update() {
     } else {
       text(numChars[n], x, y);
     }
+  }
+
+  function drawBar(){
+    color("black");
+    box(10,50,5,75);
+  }
+  function drawScoreBox(y){
+    color("light_black");
+    if(y == undefined){
+      y = 50;
+    }
+    if(y > 90){
+      y = 90;
+    }
+    if(y < 10){
+      y = 10;
+    }
+    box(10,y,7,7);
   }
 
   function calcPlayerCardPos(p) {
