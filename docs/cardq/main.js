@@ -39,12 +39,14 @@ const numChars = [
   "K",
 ];
 
-/** @type {{num: number, pos: Vector, tPos:Vector, gPos:Vector }[]} */
+/** @type {{num: number, pos: Vector, tPos:Vector, gPos:Vector , enemyplacing:boolean }[]} */
 let playerCards;
-/** @type {{num: number, pos: Vector, tPos:Vector, gPos:Vector }[]} */
+/** @type {{num: number, pos: Vector, tPos:Vector, gPos:Vector , enemyplacing:boolean }[]} */
 let enemyCards;
-/** @type {{num: number, pos: Vector, tPos:Vector }[]} */
+/** @type {{num: number, pos: Vector, tPos:Vector, enemyplacing:boolean }[]} */
 let placedCards;
+/** @type {{num: number, pos: Vector, tPos:Vector, enemyplacing:boolean, pi:number, cn:number }[]} */
+let enemyPlacingCards;
 /** @type { number[]} */
 let placedCardNumbers;
 let centerY;
@@ -68,22 +70,27 @@ function update() {
     placedCards = times(2, (i) => {
       const pos = vec(calcPlacedCardX(i), 0);
       const tPos = vec(pos);
-      return { num: placedCardNumbers[i], pos, tPos };
+      const enemyplacing = false;
+      return { num: placedCardNumbers[i], pos, tPos, enemyplacing };
+      
     });
     playerCards = times(cardColumnCount * cardRowCount, (i) => {
       const gPos = vec(i % cardColumnCount, floor(i / cardColumnCount));
       const num = gPos.y === 0 ? [1, 3, 3, 11, 13][gPos.x] : rndi(1, 14);
       const pos = calcPlayerCardPos(gPos);
       const tPos = vec(pos);
-      return { num, pos, tPos, gPos };
+      const enemyplacing = false;
+      return { num, pos, tPos, gPos, enemyplacing };
     });
     enemyCards = times(cardColumnCount * cardRowCount, (i) => {
       const gPos = vec(i % cardColumnCount, floor(i / cardColumnCount));
       const num = rndi(1, 14);
       const pos = calcEnemyCardPos(gPos);
       const tPos = vec(pos);
-      return { num, pos, tPos, gPos };
+      const enemyplacing = true;
+      return { num, pos, tPos, gPos, enemyplacing };
     });
+    enemyPlacingCards = [];
     centerY = targetCenterY = 40;
     playerPrevMoveIndex = enemyPrevMoveIndex = 0;
     enemyNextMoveIndex = undefined;
@@ -126,11 +133,12 @@ function update() {
         c.tPos.x = c.pos.x < 50 ? -50 : 150;
       }); // removes cards
       placedCardNumbers = times(2, () => rndi(1, 14)); //
-      placedCardNumbers.forEach((n, i) => {
+      placedCardNumbers.forEach((n, i) => {// shuffling
         placedCards.push({
           num: n,
           pos: vec(i === 0 ? -5 : 105, 0),
           tPos: vec(calcPlacedCardX(i), 0),
+          enemyplacing: false,
         });
       }); // adds new cards
       shuffleCount = 0; // resets the shufflecount 
@@ -138,7 +146,8 @@ function update() {
     shuffleTicks = 0; // resets shuffleticks
   }
   const pci = floor((input.pos.x - 50) / cardIntervalX + cardColumnCount / 2); // finds player card index depending on location of click on screen
-  if (input.isJustPressed) {
+  if (input.isJustPressed) { // triggers on player button press
+    console.log("clicked")
     if (pci >= 0 && pci < cardColumnCount) {
       const pi = placeCard(pci, playerPrevMoveIndex, playerCards); // player prevmove starts at 0, pci is index of card played in playerCards
       if (pi < 0) { // pi is -1 if it is incorrect
@@ -158,30 +167,30 @@ function update() {
     }
   }
   enemyNextMoveTicks--;
-  if (enemyNextMoveTicks < 0) {
+  if (enemyNextMoveTicks < 0) { // when the enemy is ready to move
     enemyNextMoveTicks = rnd(50, 70) / sqrt(difficulty); // defines when the enemy will move next
-    if (enemyNextMoveIndex != null) {
+    if (enemyNextMoveIndex != null) { // if th
       const [pi, cn, ci] = checkPlacedIndex(
         enemyNextMoveIndex,
         enemyPrevMoveIndex,
         enemyCards
       );
-      if (pi < 0) {
-        enemyNextMoveTicks *= 3;
-      } else {
-        play("select");
-        placeCard(enemyNextMoveIndex, enemyPrevMoveIndex, enemyCards);
-        enemyPrevMoveIndex = pi;
-        targetCenterY += 5;
-        multiplier = 1;
+      if (pi < 0) { // if the enemy cannot make a move
+        enemyNextMoveTicks *= 3; //multiply the amount of time the enemy waits before trying again
+      } else { // if the enemy can make a move
+        play("select"); // X //
+        placeCard(enemyNextMoveIndex, enemyPrevMoveIndex, enemyCards); // places a card (code for "knocking off" cards would have to be in PlaceCard)
+        enemyPrevMoveIndex = pi; // updates enemy's last move (for some reason)
+        targetCenterY += 5; 
+        multiplier = 1; // resets player multiplier
       }
     }
-    enemyNextMoveIndex = undefined;
-    let ni = rndi(cardColumnCount);
-    for (let i = 0; i < cardColumnCount; i++) {
+    enemyNextMoveIndex = undefined; // resets the next move
+    let ni = rndi(cardColumnCount); // assigns ni to a random number between 1-5
+    for (let i = 0; i < cardColumnCount; i++) { // idk what this does lmao
       const [pi, cn, ci] = checkPlacedIndex(ni, enemyPrevMoveIndex, enemyCards);
-      if (pi >= 0) {
-        if (pi !== enemyPrevMoveIndex) {
+      if (pi >= 0) { // if the enemy has made a move
+        if (pi !== enemyPrevMoveIndex) { 
           enemyNextMoveTicks *= 1.5;
         }
         enemyNextMoveIndex = ni;
@@ -190,7 +199,7 @@ function update() {
       ni = wrap(ni + 1, 0, cardColumnCount);
     }
   }
-  centerY += (targetCenterY - centerY) * 0.1;
+  centerY += (targetCenterY - centerY) * 0.1; // moves center //
   playerCards.forEach((c) => {
     movePos(c.pos, c.tPos, 0.2);
     const ec = c.gPos.y === 0 && c.gPos.x === pci ? "green" : undefined;
@@ -202,10 +211,30 @@ function update() {
       c.gPos.y === 0 && c.gPos.x === enemyNextMoveIndex ? "red" : undefined;
     drawCard(c.pos.x, c.pos.y + centerY, c.num, c.gPos.y, ec);
   });
-  placedCards.forEach((c) => {
-    movePos(c.pos, c.tPos, 0.2);
+  enemyPlacingCards.forEach((c) => {
+    movePos(c.pos, c.tPos, 0.1);
     drawCard(c.pos.x, c.pos.y + centerY, c.num, 0);
+    if (c.enemyplacing == true){
+      if (c.pos.y == c.tPos.y && c.pos.x == c.tPos.x){
+        placedCards.push({
+          num: c.num,
+          pos: c.pos,
+          tPos: c.pos,
+          enemyplacing: c.enemyplacing,
+        });
+        placedCardNumbers[c.pi] = c.cn;
+        console.log("done")
+        c.enemyplacing = false; 
+      }
+      
+    }
   });
+  placedCards.forEach((c) => {
+    //console.log(c.enemyplacing);
+    movePos(c.pos, c.tPos, 0.2);
+    
+    drawCard(c.pos.x, c.pos.y + centerY, c.num, 0);
+  }); // moves center //
   if (placedCards.length > 19) {
     placedCards.shift();
   }
@@ -224,17 +253,42 @@ function update() {
   }
 
   function placeCard(idx, ppi, cards) {
+    
     const [pi, cn, ci] = checkPlacedIndex(idx, ppi, cards); // card played index, player prevmove index and cards array gets passed to checkPlacedIndex
-    if (pi === -1) {
+   
+    
+    if ( pi === -1) {
       return -1;
     }
-    placedCardNumbers[pi] = cn;
+    
+    
+
     const c = cards.splice(ci, 1)[0];
+    
+    if (c.enemyplacing == true){
+      enemyPlacingCards.push({
+        num: c.num,
+        pos: c.pos,
+        tPos: vec(calcPlacedCardX(pi), 0),
+        enemyplacing: c.enemyplacing ,
+        pi: pi,
+        cn: cn,
+      })
+      
+    }
+    
+    else{
+    placedCardNumbers[pi] = cn;
     placedCards.push({
       num: c.num,
       pos: c.pos,
       tPos: vec(calcPlacedCardX(pi), 0),
+      enemyplacing: c.enemyplacing,
     });
+      if(enemyPlacingCards.length > 0){
+        enemyPlacingCards[0].tPos = vec(-10,10);
+      }
+    }
     cards.forEach((c) => {
       if (c.gPos.x === idx) {
         c.gPos.y--;
@@ -246,8 +300,8 @@ function update() {
     });
     const gPos = vec(idx, cardRowCount - 1);
     const pos =
-      cards === playerCards ? calcPlayerCardPos(gPos) : calcEnemyCardPos(gPos);
-    const tPos = vec(pos);
+      cards === playerCards ? calcPlayerCardPos(gPos) : calcEnemyCardPos(gPos); // moves cards depending on which player placed them
+    const tPos = vec(pos); // tpos = vec(return value from calc||||cardPos)
     cards.push({ num: rndi(1, 14), pos, tPos, gPos });
     shuffleTicks = shuffleCount = 0;
     return pi;
@@ -313,6 +367,8 @@ function update() {
     p.add(vec(tp).sub(p).mul(ratio));
     if (p.distanceTo(tp) < 1) {
       p.set(tp);
+      
     }
+    
   }
 }
